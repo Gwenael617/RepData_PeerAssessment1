@@ -20,7 +20,8 @@ and then read it. No particular preprocessing seems necessary.
 
 _The code will require the stringr and lubridate packages, you may need to install them._
 
-```{r load and read}
+
+```r
 if(!file.exists("activity.csv")){unzip(zipfile="activity.zip")}
 activityData <- read.csv("activity.csv")
 ```
@@ -40,7 +41,8 @@ the NAs values need to be cleaned out first.
 The following code calculate the number of steps taken per day 
 and create a corresponding histogram :
 
-```{r plot 1}
+
+```r
 totalByDay <- aggregate(steps ~ date, data = activityData, 
                         FUN = sum, na.rm=TRUE)
 hist(totalByDay$steps, breaks = 22,
@@ -48,13 +50,25 @@ hist(totalByDay$steps, breaks = 22,
      xlab = "steps")
 ```
 
+![plot of chunk plot 1](figure/plot 1-1.png) 
+
 The mean of the total number of steps taken per day is :
-```{r}
+
+```r
 mean(totalByDay$steps)
 ```
+
+```
+## [1] 10766.19
+```
 The median is :
-```{r}
+
+```r
 median(totalByDay$steps)
+```
+
+```
+## [1] 10765
 ```
 
 As the variable `totalByDay` already ignore the NAs values, 
@@ -70,7 +84,8 @@ both the aggregate() or tapply() functions give the same result.
 Here the code makes a time series plot of the 5-minute interval and 
 the average number of steps taken, averaged across all days :
 
-```{r plot 2}
+
+```r
 avgSteps <- tapply(activityData$steps, activityData$interval,
                    FUN=mean, na.rm=TRUE)
 ## transform the intervals in hours:minutes
@@ -80,20 +95,32 @@ plot(hm, avgSteps, type = "l", main="average number of steps taken",
      xlab="hours", ylab="steps")
 ```
 
+![plot of chunk plot 2](figure/plot 2-1.png) 
+
 We can verify that there's no missing values left :
 
-```{r}
+
+```r
 sum(is.na(avgSteps))
+```
+
+```
+## [1] 0
 ```
 
 On average accross all the days of the dataset, the 5-minute interval 
 which contains the  maximum number of steps is :
 
-```{r}
+
+```r
 library(stringr)
 a <- sprintf("%04d", as.numeric(names(avgSteps[which.max(avgSteps)])))
 paste0("it's the 5-minute interval starting at ",
        str_sub(a,1,2),"h",str_sub(a,3,4))
+```
+
+```
+## [1] "it's the 5-minute interval starting at 08h35"
 ```
 
 
@@ -101,8 +128,13 @@ paste0("it's the 5-minute interval starting at ",
 
 The total number of number of rows with NAs is :
 
-```{r}
+
+```r
 nrow(activityData[is.na(activityData),])
+```
+
+```
+## [1] 2304
 ```
 
 I will replace the missing values by the 
@@ -111,7 +143,8 @@ __mean of the steps for that 5-minute interval__.
 The following code produces a new dataset equal to the original but 
 with the missing data filled in.
 
-```{r}
+
+```r
 naReplaced <<- activityData
 for(i in 1:length(naReplaced[,1])){
   if(is.na(naReplaced[i,1])){
@@ -122,26 +155,44 @@ for(i in 1:length(naReplaced[,1])){
 ```
 
 It's easy to verify that there's no missing values left :
-```{r}
+
+```r
 sum(is.na(naReplaced))
+```
+
+```
+## [1] 0
 ```
 
 This code produces the new histogram of the total number of steps taken each day : 
 
-```{r plot 3}
+
+```r
 total3 <<- tapply(naReplaced$steps, naReplaced$date, FUN=sum)
 hist(total3, breaks = 22,
      main="total number of steps taken each day \n (missing values filled in)",
      xlab = "steps")
 ```
 
+![plot of chunk plot 3](figure/plot 3-1.png) 
+
 The new mean is :
-```{r}
+
+```r
 mean(total3)
 ```
+
+```
+## [1] 10766.19
+```
 The new median is :
-```{r}
+
+```r
 median(total3)
+```
+
+```
+## [1] 10766.19
 ```
 
 Those values don't differ much from the original ones. 
@@ -166,7 +217,8 @@ lubridate package, which will give back the number of the day
 (Sunday being day number 1, Saturday being day number 7).
 
 
-```{r}
+
+```r
 library(lubridate)
 type <- function(date) {
            if(wday(strptime(date, format = "%Y-%m-%d")) %in% c(7, 1)){
@@ -177,18 +229,31 @@ naReplaced$type <- as.factor(sapply(naReplaced$date, type))
 ```
 
 To check that the new variable was properly created, the following code should point to a weekend :
-```{r}
+
+```r
 naReplaced[(288*5)+1,]
 ```
 
+```
+##      steps       date interval    type
+## 1441     0 2012-10-06        0 weekend
+```
+
 and this one to a weekday :
-```{r}
+
+```r
 naReplaced[(288*3)+1,]
+```
+
+```
+##     steps       date interval    type
+## 865    47 2012-10-04        0 weekday
 ```
 
 The code for the plot comparing the activity patterns :
 
-```{r plot 4}
+
+```r
 par(mfrow = c(2, 1))
 
 ## subsetting by weekend type and plotting :
@@ -208,5 +273,7 @@ hm <- strptime(sprintf("%04d", avgWday$interval), format = "%H%M")
 plot(hm, avgWday$steps, type = "l", ylab="steps", xlab="hours",
              main = "weekdays (avg)")
 ```
+
+![plot of chunk plot 4](figure/plot 4-1.png) 
 
 This person seems more active during the weekends.
