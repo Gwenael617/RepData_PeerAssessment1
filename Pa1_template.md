@@ -1,5 +1,6 @@
 ---
 title: "Reproducible Research: Peer Assessment 1"
+author: "Gwenaël Gouérou"
 output: 
   html_document:
     keep_md: true
@@ -13,17 +14,22 @@ More detailed informations about this research can be found in the [README][1]
 
 ### Loading and preprocessing the data
 
-The activity.zip file should be in your working directory. 
-(this code won't download it)
-First the code check if the .csv file exists, if not it will unzip it, 
-and then read it. No particular preprocessing seems necessary.
+First the code check if the .csv file exists, if not it will download it,
+unzip it, and then read it. 
+No particular preprocessing have been deemed necessary.
 
 _The code will require the stringr and lubridate packages, you may need to install them._
 
 
 ```r
-if(!file.exists("activity.csv")){unzip(zipfile="activity.zip")}
+temp <- tempfile(fileext = ".zip")
+if(!file.exists("activity.csv")){
+url<-"http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+        download.file(url, destfile = temp)
+        unzip(temp)
+        }
 activityData <- read.csv("activity.csv")
+unlink(temp)
 ```
 
 
@@ -110,6 +116,17 @@ sum(is.na(avgSteps))
 
 On average accross all the days of the dataset, the 5-minute interval 
 which contains the  maximum number of steps is :
+
+
+```r
+names(avgSteps[which.max(avgSteps)])
+```
+
+```
+## [1] "835"
+```
+
+or to put it more nicely :
 
 
 ```r

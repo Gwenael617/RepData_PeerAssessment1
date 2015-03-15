@@ -1,5 +1,6 @@
 ---
 title: "Reproducible Research: Peer Assessment 1"
+author: "Gwenaël Gouérou"
 output: 
   html_document:
     keep_md: true
@@ -13,16 +14,21 @@ More detailed informations about this research can be found in the [README][1]
 
 ### Loading and preprocessing the data
 
-The activity.zip file should be in your working directory. 
-(this code won't download it)
-First the code check if the .csv file exists, if not it will unzip it, 
-and then read it. No particular preprocessing seems necessary.
+First the code check if the .csv file exists, if not it will download it,
+unzip it, and then read it. 
+No particular preprocessing have been deemed necessary.
 
 _The code will require the stringr and lubridate packages, you may need to install them._
 
 ```{r load and read}
-if(!file.exists("activity.csv")){unzip(zipfile="activity.zip")}
+temp <- tempfile(fileext = ".zip")
+if(!file.exists("activity.csv")){
+url<-"http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+        download.file(url, destfile = temp)
+        unzip(temp)
+        }
 activityData <- read.csv("activity.csv")
+unlink(temp)
 ```
 
 
@@ -40,7 +46,7 @@ the NAs values need to be cleaned out first.
 The following code calculate the number of steps taken per day 
 and create a corresponding histogram :
 
-```{r plot 1}
+```{r plot 1, fig.height= 6}
 totalByDay <- aggregate(steps ~ date, data = activityData, 
                         FUN = sum, na.rm=TRUE)
 hist(totalByDay$steps, breaks = 22,
@@ -70,7 +76,7 @@ both the aggregate() or tapply() functions give the same result.
 Here the code makes a time series plot of the 5-minute interval and 
 the average number of steps taken, averaged across all days :
 
-```{r plot 2}
+```{r plot 2, fig.height= 6}
 avgSteps <- tapply(activityData$steps, activityData$interval,
                    FUN=mean, na.rm=TRUE)
 ## transform the intervals in hours:minutes
@@ -88,6 +94,12 @@ sum(is.na(avgSteps))
 
 On average accross all the days of the dataset, the 5-minute interval 
 which contains the  maximum number of steps is :
+
+```{r}
+names(avgSteps[which.max(avgSteps)])
+```
+
+or to put it more nicely :
 
 ```{r}
 library(stringr)
@@ -128,7 +140,7 @@ sum(is.na(naReplaced))
 
 This code produces the new histogram of the total number of steps taken each day : 
 
-```{r plot 3}
+```{r plot 3, fig.height= 6}
 total3 <<- tapply(naReplaced$steps, naReplaced$date, FUN=sum)
 hist(total3, breaks = 22,
      main="total number of steps taken each day \n (missing values filled in)",
